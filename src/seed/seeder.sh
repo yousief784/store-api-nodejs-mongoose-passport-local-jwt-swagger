@@ -1,0 +1,1 @@
+dir && ts-node ./cities.seeder.ts && dir && ts-node ./governorates.seeder.ts
