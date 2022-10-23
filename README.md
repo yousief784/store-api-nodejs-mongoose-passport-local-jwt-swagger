@@ -1,4 +1,4 @@
-# storeFront-Backend
+# storeApi
 
 The database schema found in the [Ecommerce.pdf](Ecommerce.pdf)
 
