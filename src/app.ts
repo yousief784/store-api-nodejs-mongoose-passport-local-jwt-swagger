@@ -2,20 +2,16 @@ import express, { Application, Request, Response } from 'express';
 import config from './config';
 import database from './database';
 import router from './routes/index.routes';
-import fileUpload from 'express-fileupload';
 import localStrategy from './apis/passport/localStrategy';
 import session from 'express-session'; // session middleware
 import bodyParser from 'body-parser';
-import passport from 'passport';
 import jwtStr from './apis/passport/passport-jwt';
-import adminMiddleware from './middlewares/admin.middleware';
 import swaggerDocs from './apis/swagger/swagger';
 
 const app: Application = express();
 const port: number = parseInt(config.port as string) || 5000;
 
 // upload images to the server
-app.use(fileUpload());
 
 // get images from the server
 app.use(express.static('public'));

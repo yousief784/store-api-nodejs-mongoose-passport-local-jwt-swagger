@@ -1,11 +1,21 @@
 import { Router } from 'express';
 import UserController from '../../Controller/UserController';
 import passport from 'passport';
-import connectEnsureLogin from 'connect-ensure-login'; // authorization
 import adminMiddleware from '../../middlewares/admin.middleware';
+import multer from 'multer';
 
 const userRouter: Router = Router();
 const userController = new UserController();
+
+const storage = multer.diskStorage({
+    destination: function (_req, _file, cb) {
+        cb(null, `${process.cwd()}/public/images/userAvatar/`);
+    },
+    filename: function (req, file, cb) {
+        cb(null, `${Date.now()}${file.originalname}`);
+    },
+});
+const upload = multer({ storage: storage }).single('userAvatar');
 
 /**
  * @openapi
@@ -219,7 +229,7 @@ userRouter.get('/:id', userController.show);
  *                      type: string
  *                      example: A user with the given username is already registered
  */
-userRouter.post('/', userController.create);
+userRouter.post('/', upload, userController.create);
 
 /**
  * @openapi

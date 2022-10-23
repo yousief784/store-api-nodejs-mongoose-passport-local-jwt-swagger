@@ -5,6 +5,7 @@ import Category from '../models/categorySchema';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/adminSchema';
 import config from '../config';
+import multer from 'multer';
 
 class UserController {
     index = async (req: Request, res: Response): Promise<void | object> => {
@@ -39,7 +40,9 @@ class UserController {
                 'firstName',
                 'lastName',
                 'email',
-                'userRole',
+                'phone',
+                'userGender',
+                'userAvatar',
                 'createdAt',
                 'updatedAt',
             ])
@@ -54,13 +57,17 @@ class UserController {
                     model: Product,
                     select: ['_id', 'title', 'description', 'price'],
                 },
-            ]);
+            ])
+            .then((user) => user && Object.assign(user as object));
 
         !showUser &&
             res.status(404).json({
                 status: 404,
                 message: 'User not found',
             });
+
+        showUser &&
+            (showUser.userAvatar = `${config.imagesServer}${showUser.userAvatar}`);
 
         res.status(200).json({
             status: 200,
@@ -71,21 +78,42 @@ class UserController {
 
     create = async (req: Request, res: Response): Promise<void | object> => {
         try {
-            let imagePath: any;
+            const imagePath: string = `/${
+                req.file
+                    ? req!.file?.destination.split('images/')[1] +
+                      req!.file?.filename
+                    : 'userAvatar/defaultAvatar.png'
+            }`;
 
-            const user = await User.register(req.body, req.body.password).then(
-                (data: any) => {
-                    imagePath = req!.files
-                        ? `/${this.uploadImage(req!.files!.userAvatar)}`
-                        : `/userImages/defaultAvatar.png`;
+            const createUser = await User.register(
+                req.body,
+                req.body.password
+            ).then((data: any) => {
+                const user = Object.assign(data as object);
+                user.userAvatar = imagePath;
+                user.save();
+                return Object.assign(user);
+            });
 
-                    const user = Object.assign(data as object);
-                    user.userAvatar = imagePath;
-                    return user;
-                }
-            );
+            console.log(createUser);
 
-            user.userAvatar = `${config.imagesServer}${user.userAvatar}`;
+            const user = {
+                firstName: createUser.firstName,
+                lastName: createUser.lastName,
+                phone: createUser.phone,
+                userAvatar: `${config.imagesServer}${createUser.userAvatar}`,
+                userGender: createUser.userGender,
+                categories: createUser.categories,
+                products: createUser.products,
+                isDeleted: false,
+                _id: createUser._id,
+                email: createUser.email,
+                salt: createUser.salt,
+                hash: createUser.hash,
+                createdAt: createUser.createdAt,
+                updatedAt: createUser.updatedAt,
+                __v: 0,
+            };
 
             return res.status(201).json({
                 status: 201,
@@ -257,21 +285,6 @@ class UserController {
             });
         }
     };
-
-    private uploadImage(userAvatar: object): string {
-        const userImage = Object.assign(userAvatar);
-        const date = new Date();
-        const imageName = `${date.getTime()}${userImage.name}`;
-        const uploadPath =
-            process.cwd() + '/public/images/userImages/' + imageName;
-
-        userImage.mv(uploadPath, (err: any) => {
-            if (err) {
-                return err;
-            }
-        });
-        return `userImages/${imageName}`;
-    }
 }
 
 export default UserController;

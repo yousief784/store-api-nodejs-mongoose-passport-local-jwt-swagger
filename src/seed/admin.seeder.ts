@@ -16,7 +16,7 @@ const user = {
     createdAt: '2022-10-17T01:36:07.552Z',
     updatedAt: '2022-10-17T01:36:07.552Z',
     __v: 0,
-    userAvatar: '/userImages/defaultAvatar.png',
+    userAvatar: '/userAvatar/defaultAvatar.png',
 };
 
 const admin = () => {
